@@ -32,7 +32,7 @@ spec:
         cpu: 500m
     ingress:
       enabled: true
-      ingressClassName: nginx
+      # ingressClassName: nginx
       hosts:
         host: loki.fert.name
     read:

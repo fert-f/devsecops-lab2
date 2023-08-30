@@ -1,6 +1,6 @@
 kubeProxyReplacement: strict
 # k8sServiceHost: 10.0.20.10
-# k8sServicePort: 6443
+k8sServicePort: 6443
 
 containerRuntime:
   # integration: crio

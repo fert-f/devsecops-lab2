@@ -13,9 +13,6 @@ metadata:
   name: trivy
   namespace: security
 spec:
-  dependsOn:
-  - name: ingress-nginx
-    namespace: ingress-nginx
   install:
     timeout: 20m
     remediation:

@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
 - gotk-components.yaml
 - gotk-sync.yaml
-- git-repos.yaml
-- helm-repos.yaml
+# - git-repos.yaml
+# - helm-repos.yaml
 - weaveworks-gitops.yaml
 # - podfather.yaml

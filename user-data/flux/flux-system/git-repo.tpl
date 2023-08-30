@@ -11,4 +11,4 @@ spec:
   interval: 1m0s
   ref:
     branch: ${branch}
-  url: ssh://git@github.com/fert-f/devsecops-lab2.git
+  url: https://github.com/fert-f/devsecops-lab2

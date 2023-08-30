@@ -31,11 +31,6 @@ spec:
         name: defectdojo
         namespace: security
   interval: 60m
-  dependsOn:
-    - name: local-path-provisioner
-      namespace: local-path-provisioner
-    - name: ingress-nginx
-      namespace: ingress-nginx
   install:
     remediation:
       retries: -1
@@ -58,7 +53,7 @@ spec:
         existingPasswordSecret: defectdojo-rabbitmq-specific
         existingErlangSecret: defectdojo-rabbitmq-specific
       persistence:
-        storageClass: local-path
+        # storageClass: local-path
         size: 1Gi
     postgresql:
       enabled: true
