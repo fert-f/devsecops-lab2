@@ -1,0 +1,56 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harbor-ca-injector-script
+  namespace: registry
+data:
+  setup.sh: |
+    set -x; sleep 15 && cp ca.crt /usr/local/share/ca-certificates/harbor.crt && update-ca-certificates && systemctl restart containerd
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: registry
+  name: harbor-ca-injector
+  labels:
+    k8s-app: harbor-ca-injector
+spec:
+  selector:
+    matchLabels:
+      k8s-app: harbor-ca-injector
+  template:
+    metadata:
+      labels:
+        k8s-app: harbor-ca-injector
+    spec:
+      volumes:
+      - name: harbor-secret
+        secret:
+          secretName: harbor-ingress
+      hostPID: true
+      hostNetwork: true
+      initContainers:
+      - name: init-node
+        command: ["nsenter"]
+        volumeMounts:
+        - name: harbor-secret
+          mountPath: /tmp/harbor-secret
+        args: ["--mount=/proc/1/ns/mnt", "--wd=/tmp/harbor-secret", "--", "sh", "-c", "$(SETUP_SCRIPT)"]
+        image: debian
+        env:
+        - name: SETUP_SCRIPT
+          valueFrom:
+            configMapKeyRef:
+              name: harbor-ca-injector-script
+              key: setup.sh
+        securityContext:
+          privileged: true
+      containers:
+      - name: wait
+        image: k8s.gcr.io/pause:3.1
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+---

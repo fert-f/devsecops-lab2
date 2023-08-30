@@ -1,0 +1,115 @@
+apt-get -y install podman
+
+podman pull alpine:3.13.11
+podman login --tls-verify=false --username admin --password Harbor12345 core.fert.name:443/library
+
+podman tag alpine:3.13.11 core.fert.name:443/library/alpine:3.13.11
+
+
+echo "10.0.20.20 core.fert.name" >> /etc/hosts
+echo "10.0.20.50 core.fert.name:443" >> /etc/hosts
+curl -o /usr/local/share/ca-certificates/harbor-proxy.crt -k https://core.fert.name:443/api/v2.0/systeminfo/getcert
+curl -o /usr/local/share/ca-certificates/harbor.crt -k https://core.fert.name:443/api/v2.0/systeminfo/getcert
+update-ca-certificates
+systemctl restart containerd
+
+podman push core.fert.name:443/library/alpine:3.13.10
+podman pull core.fert.name:443/hub.docker.com/library/alpine:3.13.10
+podman pull core.fert.name:443/quay.io/prometheus/alertmanager:v0.24.0
+podman pull core.fert.name:443/quay.io/prometheus-operator/prometheus-config-reloader:v0.57.0
+
+podman pull core.fert.name:443/hub.docker.com/library/alpine:3.13.10
+podman pull core.fert.name:443/quay.io/prometheus/alertmanager:v0.24.0
+
+
+  # Create registries
+  curl -sk -X POST -u "admin:Harbor12345" https://core.fert.name:443/api/v2.0/registries -H 'accept: application/json' -H 'Content-Type: application/json' \
+  -d '{
+    "name": "k8s.gcr.io",
+    "url": "https://k8s.gcr.io",
+    "type": "docker-registry"
+  }'
+  curl -sk -X POST -u "admin:Harbor12345" https://core.fert.name:443/api/v2.0/registries -H 'accept: application/json' -H 'Content-Type: application/json' \
+  -d '{
+    "name": "hub.docker.com",
+    "url": "https://hub.docker.com",
+    "type": "docker-hub"
+  }'
+  curl -sk -X POST -u "admin:Harbor12345" https://core.fert.name:443/api/v2.0/registries -H 'accept: application/json' -H 'Content-Type: application/json' \
+  -d '{
+    "name": "quay.io",
+    "url": "https://quay.io",
+    "type": "quay"
+  }'
+
+  # List registries
+  curl -sk -X GET -u "admin:Harbor12345" 'https://core.fert.name:443/api/v2.0/registries?page=1&page_size=10' -H 'accept: application/json' | jq
+
+  # Get registry id
+  docker_id=$(curl -skX 'GET' -u "admin:Harbor12345" "https://core.fert.name:443/api/v2.0/registries?page=1&page_size=10&name=hub.docker.com" -H 'accept: application/json' | jq '.[].id')
+  quay_id=$(curl -skX 'GET' -u "admin:Harbor12345" "https://core.fert.name:443/api/v2.0/registries?page=1&page_size=10&name=quay.io" -H 'accept: application/json' | jq '.[].id')
+  gcr_id=$(curl -skX 'GET' -u "admin:Harbor12345" "https://core.fert.name:443/api/v2.0/registries?page=1&page_size=10&name=k8s.gcr.io" -H 'accept: application/json' | jq '.[].id')
+  echo docker_id=${docker_id}, quay_id=${quay_id}, gcr_id=${gcr_id}
+
+
+  # Create projects
+  curl -kX 'POST' -u "admin:Harbor12345" 'https://core.fert.name:443/api/v2.0/projects' -H 'accept: application/json' -H 'Content-Type: application/json' \
+  -d '{
+    "project_name": "quay.io",
+    "registry_id": '${quay_id}',
+    "public": true,
+    "storage_limit": 10240000000,
+    "metadata": {
+      "auto_scan": "true",
+      "public": "true"
+    }
+  }'
+
+  curl -kX 'POST' -u "admin:Harbor12345" 'https://core.fert.name:443/api/v2.0/projects' -H 'accept: application/json' -H 'Content-Type: application/json' \
+  -d '{
+    "project_name": "hub.docker.com",
+    "registry_id": '${docker_id}',
+    "public": true,
+    "storage_limit": 10240000000,
+    "metadata": {
+      "auto_scan": "true",
+      "public": "true"
+    }
+  }'
+
+  curl -kX 'POST' -u "admin:Harbor12345" 'https://core.fert.name:443/api/v2.0/projects' -H 'accept: application/json' -H 'Content-Type: application/json' \
+  -d '{
+    "project_name": "k8s.gcr.io",
+    "registry_id": '${gcr_id}',
+    "public": true,
+    "storage_limit": 10240000000,
+    "metadata": {
+      "auto_scan": "true",
+      "public": "true"
+    }
+  }'
+
+  curl -kX 'POST' -u "admin:Harbor12345" 'https://core.fert.name:443/api/v2.0/projects' -H 'accept: application/json' -H 'Content-Type: application/json' \
+  -d '{
+    "project_name": "docker.io",
+    "registry_id": '${docker_id}',
+    "public": true,
+    "storage_limit": 10240000000,
+    "metadata": {
+      "auto_scan": "true",
+      "public": "true"
+    }
+  }'
+  # List projects
+  curl -skX 'GET' -u "admin:Harbor12345" "https://core.fert.name:443/api/v2.0/projects?page=1&page_size=10" -H 'accept: application/json' | jq '.'
+
+
+
+podman push --tls-verify=false core.fert.name:443/library/alpine:3.13.10
+podman pull --tls-verify=false core.fert.name:443/library/alpine:3.13.10
+
+
+podman push --tls-verify=false core.fert.name:443/library/alpine:3.13.10
+podman pull --tls-verify=false core.fert.name:443/hub.docker.com/alpine:3.13.10
+
+podman pull --tls-verify=false core.fert.name:443/hub.docker.com/library/alpine:3.13.10
