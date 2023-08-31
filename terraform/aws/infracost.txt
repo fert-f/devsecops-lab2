@@ -1,0 +1,59 @@
+Project: .
+
+ Name                                                                                    Monthly Qty  Unit                    Monthly Cost 
+                                                                                                                                           
+ module.eks.aws_cloudwatch_log_group.this[0]                                                                                               
+ ├─ Data ingested                                                                  Monthly cost depends on usage: $0.63 per GB             
+ ├─ Archival Storage                                                               Monthly cost depends on usage: $0.0324 per GB           
+ └─ Insights queries data scanned                                                  Monthly cost depends on usage: $0.0063 per GB           
+                                                                                                                                           
+ module.eks.aws_eks_cluster.this[0]                                                                                                        
+ └─ EKS cluster                                                                                  730  hours                         $73.00 
+                                                                                                                                           
+ module.eks.module.kms.aws_kms_key.this[0]                                                                                                 
+ ├─ Customer master key                                                                            1  months                         $1.00 
+ ├─ Requests                                                                       Monthly cost depends on usage: $0.03 per 10k requests   
+ ├─ ECC GenerateDataKeyPair requests                                               Monthly cost depends on usage: $0.10 per 10k requests   
+ └─ RSA GenerateDataKeyPair requests                                               Monthly cost depends on usage: $0.10 per 10k requests   
+                                                                                                                                           
+ module.eks.module.self_managed_node_group["spot"].aws_autoscaling_group.this[0]                                                           
+ └─ module.eks.module.self_managed_node_group["spot"].aws_launch_template.this[0]                                                          
+    ├─ Instance usage (Linux/UNIX, spot, r5a.large)                                              730  hours                         $34.02 
+    └─ EC2 detailed monitoring                                                                     7  metrics                        $2.10 
+                                                                                                                                           
+ module.vpc.aws_nat_gateway.this[0]                                                                                                        
+ ├─ NAT gateway                                                                                  730  hours                         $37.96 
+ └─ Data processed                                                                 Monthly cost depends on usage: $0.052 per GB            
+                                                                                                                                           
+ OVERALL TOTAL                                                                                                                     $148.08 
+──────────────────────────────────
+56 cloud resources were detected:
+∙ 5 were estimated, 3 of which include usage-based costs, see https://infracost.io/usage-file
+∙ 51 were free:
+  ∙ 11 x aws_security_group_rule
+  ∙ 6 x aws_iam_role_policy_attachment
+  ∙ 6 x aws_route_table_association
+  ∙ 6 x aws_subnet
+  ∙ 3 x aws_security_group
+  ∙ 2 x aws_iam_role
+  ∙ 2 x aws_route
+  ∙ 2 x aws_route_table
+  ∙ 1 x aws_default_network_acl
+  ∙ 1 x aws_default_route_table
+  ∙ 1 x aws_default_security_group
+  ∙ 1 x aws_ec2_tag
+  ∙ 1 x aws_eip
+  ∙ 1 x aws_eks_addon
+  ∙ 1 x aws_iam_instance_profile
+  ∙ 1 x aws_iam_openid_connect_provider
+  ∙ 1 x aws_iam_policy
+  ∙ 1 x aws_internet_gateway
+  ∙ 1 x aws_kms_alias
+  ∙ 1 x aws_launch_template
+  ∙ 1 x aws_vpc
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Project                                            ┃ Monthly cost ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━┫
+┃ .                                                  ┃ $148         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━┛
