@@ -7,8 +7,7 @@ metadata:
 spec:
   interval: 10m0s
   ref:
-    branch: release/2.23.2
-    # tag: v0.0.23
+    branch: ${version_git_defectdojo}
   url: https://github.com/DefectDojo/django-DefectDojo
   ignore: |
     # exclude all
@@ -25,7 +24,7 @@ spec:
   chart:
     spec:
       chart: ./helm/defectdojo
-      version: 1.6.72
+      version: ${version_helm_defectdojo}
       sourceRef:
         kind: GitRepository
         name: defectdojo
@@ -35,12 +34,15 @@ spec:
     remediation:
       retries: -1
     timeout: 20m
+  dependsOn:
+  - name: aws-load-balancer-controller
+    namespace: kube-system
   values:
     createSecret: false
     createRabbitMqSecret: false
     createPostgresqlSecret: false
-    tag: 2.23.0
-    host: defectdojo.fert.name
+    tag: ${version_app_defectdojo}
+    host: defectdojo.${stack_name}.${domain_name}
     rabbitmq:
       resources:
         requests:
@@ -74,10 +76,21 @@ spec:
             memory: 32Mi
             cpu: 50m
       ingress:
-        ingressClassName: nginx
         activateTLS: false
         annotations:
-          ingress.kubernetes.io/proxy-body-size: 8m
+          #ingress.kubernetes.io/proxy-body-size: 8m
+          kubernetes.io/ingress.class: alb
+          external-dns.alpha.kubernetes.io/ttl: '120'
+          alb.ingress.kubernetes.io/scheme: internet-facing
+          # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+          alb.ingress.kubernetes.io/security-groups: ${sg_whitelisted}
+          alb.ingress.kubernetes.io/group.name: mgmt
+          alb.ingress.kubernetes.io/backend-protocol: HTTP
+          alb.ingress.kubernetes.io/target-type: ip
+          alb.ingress.kubernetes.io/tags: "loki=true"
+          alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-FS-1-2-Res-2020-10"
+          alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+          alb.ingress.kubernetes.io/certificate-arn: ${acm_certificate_arn}
     imagePullPolicy: IfNotPresent
     monitoring:
       enabled: false

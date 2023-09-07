@@ -1,4 +1,22 @@
 ---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: prometheus-community
+  namespace: monitoring
+spec:
+  interval: 60m
+  url: https://prometheus-community.github.io/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  interval: 60m
+  url: https://grafana.github.io/helm-charts
+---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -12,10 +30,13 @@ spec:
     remediation:
       retries: -1
     timeout: 20m
+  dependsOn:
+  - name: aws-load-balancer-controller
+    namespace: kube-system
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: 46.8.0
+      version: ${version_helm_promstack}
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -25,9 +46,21 @@ spec:
     grafana:
       defaultDashboardsEnabled: false
       ingress:
-        ingressClassName: nginx
+        annotations:
+          kubernetes.io/ingress.class: alb
+          alb.ingress.kubernetes.io/scheme: internet-facing
+          # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+          alb.ingress.kubernetes.io/security-groups: ${sg_whitelisted}
+          alb.ingress.kubernetes.io/group.name: mgmt
+          alb.ingress.kubernetes.io/backend-protocol: HTTP
+          alb.ingress.kubernetes.io/target-type: ip
+          alb.ingress.kubernetes.io/tags: "promstack=true"
+          alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-FS-1-2-Res-2020-10"
+          alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+          alb.ingress.kubernetes.io/certificate-arn: ${acm_certificate_arn}
+          cert-manager.io/cluster-issuer: "letsencrypt-staging"
         enabled: true
-        hosts: [grafana.fert.name]
+        hosts: [grafana.${stack_name}.${domain_name}]
         path: /
       plugins:
       - grafana-piechart-panel
@@ -154,8 +187,20 @@ spec:
     prometheus:
       ingress:
         enabled: true
-        # ingressClassName: nginx
-        hosts: [prometheus.fert.name]
+        annotations:
+          kubernetes.io/ingress.class: alb
+          alb.ingress.kubernetes.io/scheme: internet-facing
+          # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+          alb.ingress.kubernetes.io/security-groups: ${sg_whitelisted}
+          alb.ingress.kubernetes.io/group.name: mgmt
+          alb.ingress.kubernetes.io/backend-protocol: HTTP
+          alb.ingress.kubernetes.io/target-type: ip
+          alb.ingress.kubernetes.io/tags: "promstack=true"
+          alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-FS-1-2-Res-2020-10"
+          alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+          alb.ingress.kubernetes.io/certificate-arn: ${acm_certificate_arn}
+          cert-manager.io/cluster-issuer: "letsencrypt-staging"
+        hosts: [prometheus.${stack_name}.${domain_name}]
       prometheusSpec:
         # nodeSelector:
         #   "kubernetes.io/arch": arm64
@@ -176,3 +221,34 @@ spec:
           requests:
             cpu: "10m"
             memory: "32Mi"
+    defaultRules:
+      create: true
+      rules:
+        alertmanager: true
+        etcd: false
+        configReloaders: true
+        general: true
+        k8s: true
+        kubeApiserverAvailability: true
+        kubeApiserverBurnrate: true
+        kubeApiserverHistogram: true
+        kubeApiserverSlos: true
+        kubeControllerManager: true
+        kubelet: true
+        kubeProxy: true
+        kubePrometheusGeneral: true
+        kubePrometheusNodeRecording: true
+        kubernetesApps: true
+        kubernetesResources: true
+        kubernetesStorage: true
+        kubernetesSystem: true
+        kubeSchedulerAlerting: true
+        kubeSchedulerRecording: true
+        kubeStateMetrics: true
+        network: true
+        node: true
+        nodeExporterAlerting: true
+        nodeExporterRecording: true
+        prometheus: true
+        prometheusOperator: true
+        windows: true

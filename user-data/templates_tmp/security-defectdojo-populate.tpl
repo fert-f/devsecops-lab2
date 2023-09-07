@@ -21,24 +21,24 @@ spec:
               # Install requirements
               apk add curl jq
 
-              host=defectdojo.fert.name
+              host=defectdojo.${domain_name}
               svc=defectdojo-django.security.svc.cluster.local
               password='qwer12#34QWER'
               # Waiting for harbor to come up
-              while ! (curl  -S --fail-with-body http://${svc}/api/v2/api-token-auth/ --connect-timeout 5 \
-              -H "Host: ${host}" -X POST --data '{"username": "admin", "password": "admin"}' -H 'Content-Type: application/json'); \
-              do echo "Defectdojo yet not responsive (${x:=1})..."; let x++; sleep 5; done
+              while ! (curl  -S --fail-with-body http://$${svc}/api/v2/api-token-auth/ --connect-timeout 5 \
+              -H "Host: $${host}" -X POST --data '{"username": "admin", "password": "admin"}' -H 'Content-Type: application/json'); \
+              do echo "Defectdojo yet not responsive ($${x:=1})..."; let x++; sleep 5; done
 
               sleep 30
               # Get admin token
-              admin_token=$(curl -sk "http://${svc}/api/v2/api-token-auth/" -H "Host: ${host}" -X POST \
+              admin_token=$(curl -sk "http://$${svc}/api/v2/api-token-auth/" -H "Host: $${host}" -X POST \
                 -H 'accept: application/json' \
                 -H 'Content-Type: application/json' \
               --data '{"username": "admin", "password": "admin"}' | jq -r '.token')
-              echo admin_token=${admin_token}
+              echo admin_token=$${admin_token}
               # # Create product
-              curl -sk "http://${svc}/api/v2/products/" -H "Host: ${host}" -X POST \
-                -H 'accept: application/json' -H 'Content-Type: application/json' -H "Authorization: Token ${admin_token}" \
+              curl -sk "http://$${svc}/api/v2/products/" -H "Host: $${host}" -X POST \
+                -H 'accept: application/json' -H 'Content-Type: application/json' -H "Authorization: Token $${admin_token}" \
                 --data '{
                   "tags": ["java","web"],
                   "name": "Application",
@@ -48,14 +48,14 @@ spec:
                   "enable_full_risk_acceptance": false
                 }' | jq
 
-              curl -sk "http://${svc}/api/v2/products/" -H "Host: ${host}" -X GET \
-                -H 'accept: application/json' -H 'Content-Type: application/json' -H "Authorization: Token ${admin_token}" | jq
+              curl -sk "http://$${svc}/api/v2/products/" -H "Host: $${host}" -X GET \
+                -H 'accept: application/json' -H 'Content-Type: application/json' -H "Authorization: Token $${admin_token}" | jq
 
               # Create endpoint
-              curl -sk "http://${svc}/api/v2/endpoints/" -H "Host: ${host}" -X POST \
+              curl -sk "http://$${svc}/api/v2/endpoints/" -H "Host: $${host}" -X POST \
                 -H 'accept: application/json' \
                 -H 'Content-Type: application/json' \
-                -H "Authorization: Token ${admin_token}" \
+                -H "Authorization: Token $${admin_token}" \
                 --data '{
                   "tags": [
                     "generic"
@@ -65,31 +65,31 @@ spec:
                   "product": 1
                 }'
 
-              curl -sk "http://${svc}/api/v2/endpoints/" -H "Host: ${host}" -X GET \
-                -H 'accept: application/json' -H 'Content-Type: application/json' -H "Authorization: Token ${admin_token}" | jq
+              curl -sk "http://$${svc}/api/v2/endpoints/" -H "Host: $${host}" -X GET \
+                -H 'accept: application/json' -H 'Content-Type: application/json' -H "Authorization: Token $${admin_token}" | jq
 
               # Create automate user
-              curl -sk "http://${svc}/api/v2/users/" -H "Host: ${host}" -X POST \
+              curl -sk "http://$${svc}/api/v2/users/" -H "Host: $${host}" -X POST \
                 -H 'accept: application/json' \
                 -H 'Content-Type: application/json' \
-                -H "Authorization: Token ${admin_token}" \
+                -H "Authorization: Token $${admin_token}" \
               --data '{
                 "username": "automate",
                 "first_name": "Auto",
                 "last_name": "Mation",
-                "email": "auto@fert.name",
+                "email": "auto@${domain_name}",
                 "is_active": true,
                 "is_superuser": true,
-                "password": "'"${password}"'"
+                "password": "'"$${password}"'"
               }'
 
               # Get automate token
-              automation_token=$(curl -sk "http://${svc}/api/v2/api-token-auth/" -H "Host: ${host}" -X POST \
+              automation_token=$(curl -sk "http://$${svc}/api/v2/api-token-auth/" -H "Host: $${host}" -X POST \
                 -H 'accept: application/json' \
                 -H 'Content-Type: application/json' \
-                --data '{"username": "automate", "password": "'"${password}"'"}' | jq -r '.token')
-              echo "automation_token=${automation_token}"
-              token64=$(echo -n "${automation_token}"| base64 -w0)
+                --data '{"username": "automate", "password": "'"$${password}"'"}' | jq -r '.token')
+              echo "automation_token=$${automation_token}"
+              token64=$(echo -n "$${automation_token}"| base64 -w0)
 
               # Put automate token to kubernetes secret
               curl -X POST \
@@ -108,7 +108,7 @@ spec:
                   },
                   "type": "kubernetes.io/generic",
                   "data": {
-                    "token": "${token64}"
+                    "token": "$${token64}"
                   }
               }
               EOF

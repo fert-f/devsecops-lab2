@@ -22,7 +22,7 @@ spec:
   chart:
     spec:
       chart: trivy
-      version: 0.7.0
+      version: ${version_helm_trivy}
       sourceRef:
         kind: HelmRepository
         name: aquasecurity

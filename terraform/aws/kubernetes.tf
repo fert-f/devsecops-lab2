@@ -13,68 +13,66 @@
 #   ]
 # }
 
-locals {
-  kubectl_apply = [
-    "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.66.0/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml",
-    "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.66.0/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml"
-  ]
-}
+# data "http" "external_manifests" {
+#   count = length(local.kubectl_apply)
+#   url   = element(local.kubectl_apply, count.index)
+#   request_headers = {
+#     Accept = "application/json"
+#   }
+# }
 
-data "http" "manifests" {
-  count     = length(local.kubectl_apply)
-  url = element(local.kubectl_apply, count.index)
-  request_headers = {
-    Accept = "application/json"
+# resource "kubectl_manifest" "external_manifests" {
+#   count      = length(data.http.external_manifests)
+#   yaml_body  = data.http.external_manifests[count.index].body
+#   apply_only = true
+# }
+
+# resource "helm_release" "this" {
+#   repository       = "https://fluxcd-community.github.io/helm-charts"
+#   depends_on       = [module.eks]
+#   chart            = "flux2"
+#   name             = "flux2"
+#   namespace        = "flux-system"
+#   create_namespace = true
+#   wait             = false
+#   timeout          = 600
+# }
+
+
+
+module "templates" {
+  source   = "./modules/template"
+  for_each = fileset("../../user-data/templates", "*")
+  file     = each.key
+  vars = {
+    aws_account               = data.aws_caller_identity.current.account_id
+    cert_manager_irsa_role    = var.domain_name != "test.local" ? module.cert_manager_irsa_role[0].iam_role_arn : "null"
+    ebs_controller_irsa_role  = module.ebs_controller_irsa_role.iam_role_arn
+    external_dns_irsa_role    = var.domain_name != "test.local" ? module.external_dns_irsa_role[0].iam_role_arn : "null"
+    domain_name               = var.domain_name
+    lb_controller_irsa_role   = var.domain_name != "test.local" ? module.lb_controller_irsa_role[0].iam_role_arn : "null"
+    # karpenter_irsa_role       = module.karpenter_irsa_role.iam_role_arn
+    karpenter_irsa_role       = "#################"
+    region                    = var.aws_region
+    route53_zone_id           = var.domain_name != "test.local" ? data.aws_route53_zone.selected[0].zone_id : "null"
+    sg_whitelisted            = aws_security_group.whitelisted.id
+    stack_name                = var.stack_name
+    version_app_metrics       = var.versions["app_metrics"]
+    version_app_defectdojo    = var.versions["app_defectdojo"]
+    version_git_defectdojo    = var.versions["git_defectdojo"]
+    version_helm_alb          = var.versions["helm_alb"]
+    version_helm_cert-manager = var.versions["helm_cert-manager"]
+    version_helm_defectdojo   = var.versions["helm_defectdojo"]
+    version_helm_ebs          = var.versions["helm_ebs"]
+    version_helm_external-dns = var.versions["helm_external-dns"]
+    version_helm_harbor       = var.versions["helm_harbor"]
+    version_helm_karpenter    = var.versions["helm_karpenter"]
+    version_helm_promtail     = var.versions["helm_promtail"]
+    version_helm_promstack    = var.versions["helm_promstack"]
+    version_helm_sonarqube    = var.versions["helm_sonarqube"]
+    version_helm_trivy        = var.versions["helm_trivy"]
+    version_helm_ww-gitops    = var.versions["helm_ww-gitops"]
+    vpcId                     = module.vpc.vpc_id
+    acm_certificate_arn       = module.acm.acm_certificate_arn
   }
 }
-resource "kubectl_manifest" "manifests" {
-  count     = length(data.http.manifests)
-  yaml_body = data.http.manifests[count.index].body
-  apply_only = true
-}
-
-resource "kubectl_manifest" "flux-ns" {
-    yaml_body = <<YAML
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: flux-system
-YAML
-    apply_only = true
-}
-
-data "kubectl_file_documents" "flux" {
-    content = file("../../user-data/flux/flux-system/gotk-components.yaml")
-}
-resource "kubectl_manifest" "flux" {
-    count     = length(data.kubectl_file_documents.flux.documents)
-    yaml_body = element(data.kubectl_file_documents.flux.documents, count.index)
-    depends_on = [ kubectl_manifest.flux-ns ]
-    apply_only = true
-}
-
-data "kubectl_path_documents" "flux-sync" {
-    pattern = "../../user-data/flux/flux-system/git-repo.tpl"
-    vars = {
-        branch = var.gitops_branch
-    }
-}
-resource "kubectl_manifest" "flux-sync" {
-    count     = length(data.kubectl_path_documents.flux-sync.documents)
-    yaml_body = element(data.kubectl_path_documents.flux-sync.documents, count.index)
-    depends_on = [ kubectl_manifest.flux ]
-    apply_only = true
-}
-
-data "kubectl_file_documents" "flux-gotk-sync" {
-    content = file("../../user-data/flux/flux-system/gotk-sync.yaml")
-}
-resource "kubectl_manifest" "flux-gotk-sync" {
-    count     = length(data.kubectl_file_documents.flux-gotk-sync.documents)
-    yaml_body = element(data.kubectl_file_documents.flux-gotk-sync.documents, count.index)
-    depends_on = [ kubectl_manifest.flux ]
-    apply_only = true
-}
-
-

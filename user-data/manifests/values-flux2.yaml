@@ -1,0 +1,42 @@
+helmController:
+  tolerations:
+    - key: role
+      operator: "Equal"
+      value: controller
+  nodeSelector:
+    node.kubernetes.io/role: controller
+imageAutomationController:
+  tolerations:
+    - key: role
+      operator: "Equal"
+      value: controller
+  nodeSelector:
+    node.kubernetes.io/role: controller
+imageReflectionController:
+  tolerations:
+    - key: role
+      operator: "Equal"
+      value: controller
+  nodeSelector:
+    node.kubernetes.io/role: controller
+kustomizeController:
+  tolerations:
+    - key: role
+      operator: "Equal"
+      value: controller
+  nodeSelector:
+    node.kubernetes.io/role: controller
+notificationController:
+  tolerations:
+    - key: role
+      operator: "Equal"
+      value: controller
+  nodeSelector:
+    node.kubernetes.io/role: controller
+sourceController:
+  tolerations:
+    - key: role
+      operator: "Equal"
+      value: controller
+  nodeSelector:
+    node.kubernetes.io/role: controller

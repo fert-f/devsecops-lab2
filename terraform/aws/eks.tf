@@ -6,9 +6,19 @@ module "eks" {
   cluster_endpoint_public_access       = true
   cluster_endpoint_public_access_cidrs = concat(var.whitelisted_cidrs, ["${chomp(data.http.myip.body)}/32"])
   cluster_addons = {
-    # coredns = {
-    #   most_recent = true
-    # }
+    coredns = {
+      most_recent = true
+      configuration_values = jsonencode({
+        tolerations: [
+          {
+            key: "role",
+            operator: "Equal",
+            value: "controller",
+            effect: "NoSchedule"
+          }
+        ]
+      })
+    }
     # kube-proxy = {
     #   most_recent = true
     # }
@@ -23,7 +33,7 @@ module "eks" {
   control_plane_subnet_ids = module.vpc.private_subnets
 
   self_managed_node_group_defaults = {
-    vpc_security_group_ids = [aws_security_group.this.id]
+    vpc_security_group_ids = [aws_security_group.whitelisted.id]
     iam_role_additional_policies = {
       ssm = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
     }
@@ -44,28 +54,68 @@ module "eks" {
       "k8s.io/cluster-autoscaler/enabled" : true,
       "k8s.io/cluster-autoscaler/${var.stack_name}" : "owned",
     }
+    # instance_requirements = {
+    #   allowed_instance_types = ["m5.large", "m5a.large", "m5d.large", "m5ad.large"] 
+    # }
   }
 
   self_managed_node_groups = {
     spot = {
-      ami_id       = data.aws_ami.amazon-eks-linux-2.id
-      min_size     = 1
-      desired_size = 1
-      max_size     = 2
-      key_name     = module.pki.aws_key_name
-
-      instance_type = var.worker_instanse_size
-      instance_market_options = {
-        market_type = "spot"
+      ami_id                     = data.aws_ami.amazon-eks-linux-2.id
+      min_size                   = 1
+      desired_size               = 1
+      max_size                   = 2
+      key_name                   = module.pki.aws_key_name
+      use_mixed_instances_policy = true
+      mixed_instances_policy = {
+        instances_distribution = {
+          on_demand_base_capacity                  = 0
+          on_demand_percentage_above_base_capacity = 0
+          spot_allocation_strategy                 = "capacity-optimized"
+        }
       }
+      taints = {
+        dedicated = {
+          key    = "node-type"
+          value  = "controller"
+          effect = "NO_SCHEDULE"
+        }
+      }
+      labels = {
+        node-type = "controller"
+      }
+
+      instance_requirements = {
+        vcpu_count = {
+          min = var.worker_group_resources["cpu_min"]
+          max = var.worker_group_resources["cpu_max"]
+        }
+        memory_mib = {
+          min = var.worker_group_resources["mem_min"]
+          max = var.worker_group_resources["mem_max"]
+        }
+        instanceGenerations = ["current"]
+
+        cpu_manufacturers = ["intel", "amd"]
+        # local_storage       = "required"
+        # local_storage_types = ["ssd"]
+
+        # total_local_storage_gb = {
+        #   min = 100
+        # }
+      }
+      instance_type = null #var.worker_instanse_size
+      # instance_market_options = {
+      #   market_type = "spot"
+      # }
 
       block_device_mappings = {
         xvda = {
           device_name = "/dev/xvda"
           ebs = {
-            volume_size = 25
-            volume_type = "gp3"
-            encrypted = false
+            volume_size           = 25
+            volume_type           = "gp3"
+            encrypted             = false
             delete_on_termination = true
             # iops                  = 3000
             # throughput            = 150
@@ -75,16 +125,26 @@ module "eks" {
       }
       enable_bootstrap_user_data = true
       pre_bootstrap_user_data    = <<-EOT
-        echo "foo"
-        export FOO=bar
+        curl -O https://raw.githubusercontent.com/awslabs/amazon-eks-ami/master/files/max-pods-calculator.sh
+        chmod +x max-pods-calculator.sh
+        ./max-pods-calculator.sh --instance-type $(curl http://169.254.169.254/latest/meta-data/instance-type) --cni-version 1.9.0-eksbuild.1 --cni-prefix-delegation-enabled
+        echo $${KUBELET_EXTRA_ARGS}
+        export KUBELET_EXTRA_ARGS="--max-pods=$(./max-pods-calculator.sh --instance-type $(curl http://169.254.169.254/latest/meta-data/instance-type) --cni-version 1.9.0-eksbuild.1 --cni-prefix-delegation-enabled) --node-labels=node.kubernetes.io/lifecycle=spot,node.kubernetes.io/role=controller --register-with-taints=role=controller:NoSchedule"
       EOT
-      bootstrap_extra_args       = "--kubelet-extra-args '--node-labels=node.kubernetes.io/lifecycle=spot'"
-
+      # bootstrap_extra_args       = "--kubelet-extra-args $${KUBELET_EXTRA_ARGS}"
+      # bootstrap_extra_args = <<-EOT
+      #   --max-pods=$(./max-pods-calculator.sh --instance-type $(curl http://169.254.169.254/latest/meta-data/instance-type) --cni-version 1.9.0-eksbuild.1 --cni-prefix-delegation-enabled) --register-with-taints=role=controller:NoSchedule --node-labels=node.kubernetes.io/lifecycle=spot,node.kubernetes.io/role=controller
+      # EOT
+      # bootstrap_extra_args  = chomp(
+      # <<-EOT
+      # --kubelet-extra-args "--max-pods=$(./max-pods-calculator.sh --instance-type $(curl http://169.254.169.254/latest/meta-data/instance-type) --cni-version 1.9.0-eksbuild.1 --cni-prefix-delegation-enabled)
+      # --node-labels=node.kubernetes.io/lifecycle=spot,node.kubernetes.io/role=controller
+      # --register-with-taints=role=controller"
+      # EOT
+      # )
       post_bootstrap_user_data = <<-EOT
-        cd /tmp
-        sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-        sudo systemctl enable amazon-ssm-agent
-        sudo systemctl start amazon-ssm-agent
+        echo "Test= OKEY"
+        echo $${KUBELET_EXTRA_ARGS}
       EOT
     }
   }
@@ -127,10 +187,12 @@ data "http" "myip" {
 }
 
 # Security group
-resource "aws_security_group" "this" {
-  name   = "${var.stack_name}-this"
+resource "aws_security_group" "whitelisted" {
+  name   = "${var.stack_name}-whitelisted"
   vpc_id = module.vpc.vpc_id
-
+  tags = {
+    Name = "${var.stack_name}-whitelisted"
+  }
   ingress {
     from_port   = 0
     to_port     = 0
@@ -170,4 +232,10 @@ resource "aws_security_group" "this" {
     description = "Rule for egress traffic"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+module "pki" {
+  source       = "./modules/pki"
+  key_name     = var.stack_name
+  ssh_key_path = "~/.ssh/devsecops_aws_terraform.pem"
 }

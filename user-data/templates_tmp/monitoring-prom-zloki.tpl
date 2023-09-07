@@ -14,6 +14,9 @@ spec:
     remediation:
       retries: -1
     timeout: 20m
+  dependsOn:
+  - name: aws-load-balancer-controller
+    namespace: kube-system
   chart:
     spec:
       chart: loki
@@ -32,9 +35,22 @@ spec:
         cpu: 500m
     ingress:
       enabled: true
-      # ingressClassName: nginx
+      annotations:
+        kubernetes.io/ingress.class: alb
+        external-dns.alpha.kubernetes.io/ttl: '120'
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+        alb.ingress.kubernetes.io/security-groups: ${sg_whitelisted}
+        alb.ingress.kubernetes.io/group.name: mgmt
+        alb.ingress.kubernetes.io/backend-protocol: HTTP
+        alb.ingress.kubernetes.io/target-type: ip
+        alb.ingress.kubernetes.io/tags: "loki=true"
+        alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-FS-1-2-Res-2020-10"
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+        alb.ingress.kubernetes.io/certificate-arn: ${acm_certificate_arn}
+        cert-manager.io/cluster-issuer: "letsencrypt-staging"
       hosts:
-        host: loki.fert.name
+        host: loki.${stack_name}.${domain_name}
     read:
       replicas: 1
     write:

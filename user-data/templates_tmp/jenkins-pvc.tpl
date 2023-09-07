@@ -10,8 +10,8 @@ spec:
   resources:
     requests:
       storage: 5Gi
-  storageClassName: local-path
-  volumeMode: Filesystem
+  #storageClassName: local-path
+  #volumeMode: Filesystem
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -24,5 +24,5 @@ spec:
   resources:
     requests:
       storage: 5Gi
-  storageClassName: local-path
-  volumeMode: Filesystem
+  #storageClassName: local-path
+  #volumeMode: Filesystem

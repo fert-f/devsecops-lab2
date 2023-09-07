@@ -17,7 +17,7 @@ spec:
   chart:
     spec:
       chart: promtail
-      version: 6.11.5
+      version: ${version_helm_promtail}
       sourceRef:
         kind: HelmRepository
         name: grafana
@@ -30,15 +30,6 @@ spec:
         tenant_id: 1
       snippets:
         extraScrapeConfigs: |
-          # K8s audit
-          - job_name: system
-            static_configs:
-            - targets:
-                - localhost
-              labels:
-                job: k8s-audit
-                agent: promtail
-                __path__: /var/log/kubernetes/audit/audit.log
           # Add an additional scrape config for journald
           - job_name: journal
             journal:
@@ -64,16 +55,10 @@ spec:
     positions:
       filename: /tmp/positions.yaml
     extraVolumes:
-      - name: k8s-audit
-        hostPath:
-          path: /var/log/kubernetes/audit
       - name: journal
         hostPath:
           path: /var/log/journal
     extraVolumeMounts:
-      - name: k8s-audit
-        mountPath: /var/log/kubernetes/audit
-        readOnly: true
       - name: journal
         mountPath: /var/log/journal
         readOnly: true
@@ -84,3 +69,7 @@ spec:
       requests:
         cpu: 10m
         memory: 50Mi
+    tolerations:
+      - key: node.kubernetes.io/role
+        operator: "Equal"
+        value: controller

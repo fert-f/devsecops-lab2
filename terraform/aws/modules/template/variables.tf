@@ -1,0 +1,2 @@
+variable "file" {}
+variable "vars" {}

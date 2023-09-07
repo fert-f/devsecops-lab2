@@ -35,24 +35,8 @@ data "aws_ami" "amazon-eks-linux-2" {
   owners = ["amazon"]
 }
 
-# data "aws_eks_cluster_auth" "clusterauth" {
-#   name = module.eks.cluster_name
-#   #  depends_on = [
-#   #    module.eks.eks_managed_node_groups,
-#   #  ]
-# }
-
-# data "aws_eks_cluster" "cluster" {
-#   name = module.eks.cluster_name
-#   depends_on = [
-#     module.eks.eks_managed_node_groups,
-#   ]
-# }
-
-# data "aws_eks_cluster" "cluster" {
-#   name = module.eks.cluster_id
-# }
-
-# data "aws_eks_cluster_auth" "cluster" {
-#   name = module.eks.cluster_id
-# }
+data "aws_route53_zone" "selected" {
+  count        = var.domain_name != "test.local" ? 1 : 0
+  name         = "${var.domain_name}."
+  private_zone = false
+}

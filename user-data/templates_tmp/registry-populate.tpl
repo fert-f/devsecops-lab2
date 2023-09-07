@@ -47,14 +47,14 @@ spec:
               docker_id=$(curl -skX 'GET' -u "admin:Harbor12345" "http://harbor-core.registry.svc.cluster.local/api/v2.0/registries?page=1&page_size=10&name=hub.docker.com" -H 'accept: application/json' | jq '.[].id')
               quay_id=$(curl -skX 'GET' -u "admin:Harbor12345" "http://harbor-core.registry.svc.cluster.local/api/v2.0/registries?page=1&page_size=10&name=quay.io" -H 'accept: application/json' | jq '.[].id')
               gcr_id=$(curl -skX 'GET' -u "admin:Harbor12345" "http://harbor-core.registry.svc.cluster.local/api/v2.0/registries?page=1&page_size=10&name=k8s.gcr.io" -H 'accept: application/json' | jq '.[].id')
-              echo docker_id=${docker_id}, quay_id=${quay_id}, gcr_id=${gcr_id}
+              echo docker_id=$${docker_id}, quay_id=$${quay_id}, gcr_id=$${gcr_id}
 
 
               # Create projects
               curl -kX 'POST' -u "admin:Harbor12345" 'http://harbor-core.registry.svc.cluster.local/api/v2.0/projects' -H 'accept: application/json' -H 'Content-Type: application/json' \
               -d '{
                 "project_name": "quay.io",
-                "registry_id": '${quay_id}',
+                "registry_id": '$${quay_id}',
                 "public": true,
                 "storage_limit": 10240000000,
                 "metadata": {
@@ -66,7 +66,7 @@ spec:
               curl -kX 'POST' -u "admin:Harbor12345" 'http://harbor-core.registry.svc.cluster.local/api/v2.0/projects' -H 'accept: application/json' -H 'Content-Type: application/json' \
               -d '{
                 "project_name": "hub.docker.com",
-                "registry_id": '${docker_id}',
+                "registry_id": '$${docker_id}',
                 "public": true,
                 "storage_limit": 10240000000,
                 "metadata": {
@@ -78,7 +78,7 @@ spec:
               curl -kX 'POST' -u "admin:Harbor12345" 'http://harbor-core.registry.svc.cluster.local/api/v2.0/projects' -H 'accept: application/json' -H 'Content-Type: application/json' \
               -d '{
                 "project_name": "k8s.gcr.io",
-                "registry_id": '${gcr_id}',
+                "registry_id": '$${gcr_id}',
                 "public": true,
                 "storage_limit": 10240000000,
                 "metadata": {

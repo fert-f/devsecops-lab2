@@ -17,8 +17,8 @@ spec:
   suspend: false
   interval: 5m
   dependsOn:
-  - name: ingress-nginx
-    namespace: ingress-nginx
+  - name: aws-load-balancer-controller
+    namespace: kube-system
   - name: harbor
     namespace: registry
   install:
@@ -42,17 +42,17 @@ spec:
         existingSecret: "jenkins-admin"
         userKey: jenkins-admin-user
         passwordKey: jenkins-admin-password
-      jenkinsUrl: http://jenkins.fert.name/
-      jenkinsAdminEmail: "jenkins@fert.name"
+      jenkinsUrl: http://jenkins.${stack_name}.${domain_name}/
+      jenkinsAdminEmail: "jenkins@${stack_name}.${domain_name}"
       jenkinsUrlProtocol: "http"
       sidecars:
         configAutoReload:
           enabled: true
-      additionalExistingSecrets:
-        - name: secret-credentials
-          keyName: github_app_ro
-        - name: secret-credentials
-          keyName: github_devsecops_ro
+      # additionalExistingSecrets:
+      #   - name: secret-credentials
+      #     keyName: github_app_ro
+      #   - name: secret-credentials
+      #     keyName: github_devsecops_ro
       additionalSecrets:
        - name: nameOfSecret
          value: secretText
@@ -85,9 +85,21 @@ spec:
       ingress:
           enabled: true
           paths: []
-          hostName: jenkins.fert.name
+          hostName: jenkins.${stack_name}.${domain_name}
           apiVersion: "networking.k8s.io/v1"
-          ingressClassName: nginx
+          annotations:
+            kubernetes.io/ingress.class: alb
+            external-dns.alpha.kubernetes.io/ttl: '120'
+            alb.ingress.kubernetes.io/scheme: internet-facing
+            # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+            alb.ingress.kubernetes.io/security-groups: ${sg_whitelisted}
+            alb.ingress.kubernetes.io/group.name: mgmt
+            alb.ingress.kubernetes.io/backend-protocol: HTTP
+            alb.ingress.kubernetes.io/target-type: ip
+            alb.ingress.kubernetes.io/tags: "loki=true"
+            alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-FS-1-2-Res-2020-10"
+            alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+            alb.ingress.kubernetes.io/certificate-arn: ${acm_certificate_arn}
       resources:
         limits:
           cpu: 4
@@ -115,11 +127,6 @@ spec:
                         }
                       }
                     }
-                    steps {
-                      jobDsl {
-                        targets('jenkins-jobs/*.groovy')
-                      }
-                    }
                   }
               - script: queue('seed')
           jenkins-casc-configs: |
@@ -128,37 +135,34 @@ spec:
                 useScriptSecurity: false
               gitHostKeyVerificationConfiguration:
                 sshHostKeyVerificationStrategy: "acceptFirstConnectionStrategy"
-            credentials:
-              system:
-                domainCredentials:
-                - credentials:
-                  - string:
-                      description: "github app ro test string"
-                      id: "github_app_ro3"
-                      scope: GLOBAL
-                      secret: ${secret-credentials-github_app_ro}
-                  - basicSSHUserPrivateKey:
-                      scope: GLOBAL
-                      id: github_devsecops_ro
-                      username: fert
-                      description: "github devsecops ro token"
-                      privateKeySource:
-                        directEntry:
-                          privateKey: ${secret-credentials-github_devsecops_ro}
-                  - basicSSHUserPrivateKey:
-                      scope: GLOBAL
-                      id: github_app_ro
-                      username: fert
-                      description: "github app ro token"
-                      privateKeySource:
-                        directEntry:
-                          privateKey: ${secret-credentials-github_app_ro}
+            # credentials:
+            #   system:
+            #     domainCredentials:
+            #     - credentials:
+            #       - string:
+            #           description: "github app ro test string"
+            #           id: "github_app_ro3"
+            #           scope: GLOBAL
+            #           secret: $${secret-credentials-github_app_ro}
+            #       - basicSSHUserPrivateKey:
+            #           scope: GLOBAL
+            #           id: github_devsecops_ro
+            #           username: fert
+            #           description: "github devsecops ro token"
+            #           privateKeySource:
+            #             directEntry:
+            #               privateKey: $${secret-credentials-github_devsecops_ro}
+            #       - basicSSHUserPrivateKey:
+            #           scope: GLOBAL
+            #           id: github_app_ro
+            #           username: fert
+            #           description: "github app ro token"
+            #           privateKeySource:
+            #             directEntry:
+            #               privateKey: $${secret-credentials-github_app_ro}
           welcome-message: |
             jenkins:
               systemMessage: Welcome to DevSecOps CI\CD server.
-
-
-
       prometheus:
         enabled: true
         serviceMonitorNamespace: monitoring
@@ -167,7 +171,7 @@ spec:
     rbac:
       create: true
     persistence:
-      storageClass: local-path
+      # storageClass: local-path
       size: "3Gi"
       annotations:
         pv.beta.kubernetes.io/gid: "1000"
@@ -176,7 +180,7 @@ spec:
     #   podName: default
     #   customJenkinsLabels: default
     #   # set resources for additional agents to inherit
-      image: core.fert.name:443/hub.docker.com/jenkins/inbound-agent
+      image: core.${stack_name}.${domain_name}:443/hub.docker.com/jenkins/inbound-agent
       tag: 3131.vf2b_b_798b_ce99-3-jdk11
       resources:
         requests:

@@ -28,7 +28,7 @@ spec:
                 -d '{ 
                       "secret": "secureSecret8",
                       "disable": false,
-                      "name": "'"${username}"'",
+                      "name": "'"$${username}"'",
                       "duration": -1,
                       "level": "system",
                       "permissions": [
@@ -46,12 +46,12 @@ spec:
 
               echo "Generated token: $token"
               echo "Username: $username"
-              robotname='robot$'"${username}"
+              robotname='robot$'"$${username}"
               echo "Robotname: $robotname"
-              usernamepassword64=$(echo -n "${robotname}:${token}"| base64 -w0)
+              usernamepassword64=$(echo -n "$${robotname}:$${token}"| base64 -w0)
               echo "Usernamepassword: $(echo -n $usernamepassword64 | base64 -d)"
-              dockerconfigjson='{"auths": {"core.fert.name": {"auth": "'"${usernamepassword64}"'"}}}'
-              dockerconfigjson64=$(echo -n ${dockerconfigjson}|base64 -w0)
+              dockerconfigjson='{"auths": {"core.${domain_name}": {"auth": "'"$${usernamepassword64}"'"}}}'
+              dockerconfigjson64=$(echo -n $${dockerconfigjson}|base64 -w0)
               echo $dockerconfigjson64 | base64 -d | jq '.auths[].auth|@base64d'
 
               curl -X POST \
@@ -70,7 +70,7 @@ spec:
                   },
                   "type": "kubernetes.io/dockerconfigjson",
                   "data": {
-                    ".dockerconfigjson": "${dockerconfigjson64}"
+                    ".dockerconfigjson": "$${dockerconfigjson64}"
                   }
               }
               EOF

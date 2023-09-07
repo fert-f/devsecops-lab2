@@ -20,10 +20,13 @@ spec:
     timeout: 20m
     remediation:
       retries: -1
+  dependsOn:
+  - name: aws-load-balancer-controller
+    namespace: kube-system
   chart:
     spec:
       chart: sonarqube
-      version: 10.1.0+628 
+      version: ${version_helm_sonarqube}
       sourceRef:
         kind: HelmRepository
         name: sonarqube
@@ -39,10 +42,22 @@ spec:
     #   jwtSecret: dZ0EB0KxnF++nr5+4vfTCaun/eWbv6gOoXodiAMqcFo=
     ingress:
       enabled: true
-      ingressClassName: nginx
-      # Used to create an Ingress record.
+      annotations:
+        ingress.kubernetes.io/proxy-body-size: 8m
+        kubernetes.io/ingress.class: alb
+        external-dns.alpha.kubernetes.io/ttl: '120'
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+        alb.ingress.kubernetes.io/security-groups: ${sg_whitelisted}
+        alb.ingress.kubernetes.io/group.name: mgmt
+        alb.ingress.kubernetes.io/backend-protocol: HTTP
+        alb.ingress.kubernetes.io/target-type: ip
+        alb.ingress.kubernetes.io/tags: "loki=true"
+        alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-FS-1-2-Res-2020-10"
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+        alb.ingress.kubernetes.io/certificate-arn: ${acm_certificate_arn}
       hosts:
-        - name: sonar.fert.name
+        - name: sonar.${stack_name}.${domain_name}
           # Different clouds or configurations might need /* as the default path
           path: /
           # For additional control over serviceName and servicePort
