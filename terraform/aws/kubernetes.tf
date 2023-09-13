@@ -75,6 +75,7 @@ module "templates" {
     version_helm_sonarqube         = var.versions["helm_sonarqube"]
     version_helm_trivy             = var.versions["helm_trivy"]
     version_helm_ww-gitops         = var.versions["helm_ww-gitops"]
+    version_helm_metrics           = var.versions["helm_metrics"]
     vpcId                          = module.vpc.vpc_id
   }
 }

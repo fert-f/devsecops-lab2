@@ -107,5 +107,6 @@ variable "versions" {
     helm_trivy        = "0.7.0"
     helm_ww-gitops    = "4.0.16"
     helm_karpenter    = "0.30.0"
+    helm_metrics      = "3.8.2"
   }
 }
