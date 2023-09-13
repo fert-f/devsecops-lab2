@@ -5,7 +5,7 @@ module "karpenter" {
 
   irsa_oidc_provider_arn          = module.eks.oidc_provider_arn
   irsa_namespace_service_accounts = ["karpenter:karpenter"]
-  irsa_tag_key = "kubernetes.io/cluster/${var.stack_name}"
-  irsa_tag_values = [ "owned" ]
+  irsa_tag_key                    = "kubernetes.io/cluster/${var.stack_name}"
+  irsa_tag_values                 = ["owned"]
 
 }

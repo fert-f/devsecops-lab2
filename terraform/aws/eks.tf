@@ -199,7 +199,7 @@ resource "aws_security_group" "whitelisted" {
   name   = "${var.stack_name}-whitelisted"
   vpc_id = module.vpc.vpc_id
   tags = {
-    Name = "${var.stack_name}-whitelisted"
+    Name                                      = "${var.stack_name}-whitelisted"
     "kubernetes.io/cluster/${var.stack_name}" = "owned"
   }
   ingress {

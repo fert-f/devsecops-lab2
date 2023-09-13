@@ -45,37 +45,38 @@ module "templates" {
   for_each = fileset("../../user-data/templates", "*")
   file     = each.key
   vars = {
-    acm_certificate_arn            = module.acm.acm_certificate_arn
-    aws_account                    = data.aws_caller_identity.current.account_id
-    cert_manager_irsa_role         = var.domain_name != "test.local" ? module.cert_manager_irsa_role[0].iam_role_arn : "null"
-    domain_name                    = var.domain_name
-    ebs_controller_irsa_role       = module.ebs_controller_irsa_role.iam_role_arn
-    external_dns_irsa_role         = var.domain_name != "test.local" ? module.external_dns_irsa_role[0].iam_role_arn : "null"
+    acm_certificate_arn             = module.acm.acm_certificate_arn
+    aws_account                     = data.aws_caller_identity.current.account_id
+    cert_manager_irsa_role          = var.domain_name != "test.local" ? module.cert_manager_irsa_role[0].iam_role_arn : "null"
+    domain_name                     = var.domain_name
+    ebs_controller_irsa_role        = module.ebs_controller_irsa_role.iam_role_arn
+    external_dns_irsa_role          = var.domain_name != "test.local" ? module.external_dns_irsa_role[0].iam_role_arn : "null"
     karpenter_instance_profile_name = module.karpenter.instance_profile_name
-    karpenter_irsa_role_arn        = module.karpenter.irsa_arn
-    karpenter_queue_name           = module.karpenter.queue_name
-    cluster_endpoint               = module.eks.cluster_endpoint
-    lb_controller_irsa_role        = var.domain_name != "test.local" ? module.lb_controller_irsa_role[0].iam_role_arn : "null"
-    region                         = var.aws_region
-    route53_zone_id                = var.domain_name != "test.local" ? data.aws_route53_zone.selected[0].zone_id : "null"
-    sg_whitelisted                 = aws_security_group.whitelisted.id
-    stack_name                     = var.stack_name
-    version_app_defectdojo         = var.versions["app_defectdojo"]
-    version_app_metrics            = var.versions["app_metrics"]
-    version_git_defectdojo         = var.versions["git_defectdojo"]
-    version_helm_alb               = var.versions["helm_alb"]
-    version_helm_cert-manager      = var.versions["helm_cert-manager"]
-    version_helm_defectdojo        = var.versions["helm_defectdojo"]
-    version_helm_ebs               = var.versions["helm_ebs"]
-    version_helm_external-dns      = var.versions["helm_external-dns"]
-    version_helm_harbor            = var.versions["helm_harbor"]
-    version_helm_karpenter         = var.versions["helm_karpenter"]
-    version_helm_promstack         = var.versions["helm_promstack"]
-    version_helm_promtail          = var.versions["helm_promtail"]
-    version_helm_sonarqube         = var.versions["helm_sonarqube"]
-    version_helm_trivy             = var.versions["helm_trivy"]
-    version_helm_ww-gitops         = var.versions["helm_ww-gitops"]
-    version_helm_metrics           = var.versions["helm_metrics"]
-    vpcId                          = module.vpc.vpc_id
+    karpenter_irsa_role_arn         = module.karpenter.irsa_arn
+    karpenter_queue_name            = module.karpenter.queue_name
+    cluster_endpoint                = module.eks.cluster_endpoint
+    lb_controller_irsa_role         = var.domain_name != "test.local" ? module.lb_controller_irsa_role[0].iam_role_arn : "null"
+    region                          = var.aws_region
+    route53_zone_id                 = var.domain_name != "test.local" ? data.aws_route53_zone.selected[0].zone_id : "null"
+    sg_whitelisted                  = aws_security_group.whitelisted.id
+    stack_name                      = var.stack_name
+    version_app_defectdojo          = var.versions["app_defectdojo"]
+    version_app_metrics             = var.versions["app_metrics"]
+    version_git_defectdojo          = var.versions["git_defectdojo"]
+    version_helm_alb                = var.versions["helm_alb"]
+    version_helm_cert-manager       = var.versions["helm_cert-manager"]
+    version_helm_defectdojo         = var.versions["helm_defectdojo"]
+    version_helm_ebs                = var.versions["helm_ebs"]
+    version_helm_external-dns       = var.versions["helm_external-dns"]
+    version_helm_harbor             = var.versions["helm_harbor"]
+    version_helm_karpenter          = var.versions["helm_karpenter"]
+    version_helm_promstack          = var.versions["helm_promstack"]
+    version_helm_promtail           = var.versions["helm_promtail"]
+    version_helm_sonarqube          = var.versions["helm_sonarqube"]
+    version_helm_trivy              = var.versions["helm_trivy"]
+    version_helm_ww-gitops          = var.versions["helm_ww-gitops"]
+    version_helm_metrics            = var.versions["helm_metrics"]
+    version_helm_kube-ops-view      = var.versions["helm_kube-ops-view"]
+    vpcId                           = module.vpc.vpc_id
   }
 }

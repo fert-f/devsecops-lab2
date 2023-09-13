@@ -22,7 +22,7 @@ spec:
   chart:
     spec:
       chart: kubeapps
-      version: ${version_helm_kube-ops}
+      version: ${version_helm_kube-ops-view}
       sourceRef:
         kind: HelmRepository
         name: kube-ops-view
@@ -43,4 +43,7 @@ spec:
         alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
         alb.ingress.kubernetes.io/certificate-arn: ${acm_certificate_arn}
       hostname: kube-ops-view.${stack_name}.${domain_name}
+    packaging:
+      flux:
+        enabled: true
 ---
