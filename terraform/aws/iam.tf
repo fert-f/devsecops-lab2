@@ -73,19 +73,19 @@ module "ebs_controller_irsa_role" {
   }
 }
 
-module "karpenter_irsa_role" {
-  source                = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  role_name             = "${var.stack_name}-karpenter_irsa_role"
-  role_description      = "IRSA for Karpenter"
-  attach_karpenter_controller_policy = true
+# Migrated to karpente module
+# module "karpenter_irsa_role" {
+#   source                = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+#   role_name             = "${var.stack_name}-karpenter_irsa_role"
+#   role_description      = "IRSA for Karpenter"
+#   attach_karpenter_controller_policy = true
 
-  karpenter_controller_cluster_name       = module.eks.cluster_name
-  karpenter_controller_node_iam_role_arns = ["arn:aws:iam::486271973780:role/spot-node-group-2023090704191122850000000b"]
-  # karpenter_controller_node_iam_role_arns = [module.eks.module.self_managed_node_group["spot"].iam_role_arn]
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["karpenter:karpenter"]
-    }
-  }
-}
+#   karpenter_controller_cluster_name       = module.eks.cluster_name
+#   # karpenter_controller_node_iam_role_arns = [module.eks.module.self_managed_node_group["spot"].iam_role_arn]
+#   oidc_providers = {
+#     main = {
+#       provider_arn               = module.eks.oidc_provider_arn
+#       namespace_service_accounts = ["karpenter:karpenter"]
+#     }
+#   }
+# }

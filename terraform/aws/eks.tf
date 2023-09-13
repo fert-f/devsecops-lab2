@@ -9,12 +9,12 @@ module "eks" {
     coredns = {
       most_recent = true
       configuration_values = jsonencode({
-        tolerations: [
+        tolerations : [
           {
-            key: "role",
-            operator: "Equal",
-            value: "controller",
-            effect: "NoSchedule"
+            key : "role",
+            operator : "Equal",
+            value : "controller",
+            effect : "NoSchedule"
           }
         ]
       })
@@ -159,6 +159,14 @@ module "eks" {
       username = "masterRole"
       groups   = ["system:masters"]
     },
+    {
+      rolearn  = module.karpenter.role_arn
+      username = "system:node:{{EC2PrivateDNSName}}"
+      groups = [
+        "system:bootstrappers",
+        "system:nodes",
+      ]
+    },
   ]
 
   # aws_auth_users = [
@@ -192,6 +200,7 @@ resource "aws_security_group" "whitelisted" {
   vpc_id = module.vpc.vpc_id
   tags = {
     Name = "${var.stack_name}-whitelisted"
+    "kubernetes.io/cluster/${var.stack_name}" = "owned"
   }
   ingress {
     from_port   = 0

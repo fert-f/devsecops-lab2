@@ -5,8 +5,9 @@ metadata:
   name: karpenter
   namespace: karpenter
 spec:
-  interval: 60m
-  url: oci://public.ecr.aws/karpenter/karpenter
+  type: "oci"
+  interval: 5m0s
+  url: oci://public.ecr.aws/karpenter
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -23,22 +24,24 @@ spec:
   chart:
     spec:
       chart: karpenter
-      version: ${version_helm_karpenter}
+      version: "v${version_helm_karpenter}"
       sourceRef:
         kind: HelmRepository
         name: karpenter
         namespace: karpenter
       interval: 10m
   values:
+    replicas: 1
     settings:
       aws:
         clusterName: '${stack_name}'
-        interruptionQueueName: '${stack_name}'
-        defaultInstanceProfile: ${stack_name}-KarpenterNodeInstanceProfile
-        # enablePodENI: false
+        clusterEndpoint: '${cluster_endpoint}'
+        interruptionQueueName: '${karpenter_queue_name}'
+        defaultInstanceProfile: '${karpenter_instance_profile_name}'
+        enablePodENI: true
     serviceAccount:
       annotations:
-        eks.amazonaws.com/role-arn: '${karpenter_irsa_role}'
+        eks.amazonaws.com/role-arn: '${karpenter_irsa_role_arn}'
     controller:
       resources:
         request:

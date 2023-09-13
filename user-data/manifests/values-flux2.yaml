@@ -40,3 +40,10 @@ sourceController:
       value: controller
   nodeSelector:
     node.kubernetes.io/role: controller
+cli:
+  tolerations:
+    - key: role
+      operator: "Equal"
+      value: controller
+  nodeSelector:
+    node.kubernetes.io/role: controller

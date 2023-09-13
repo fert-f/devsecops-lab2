@@ -15,6 +15,7 @@ module "vpc" {
 
   private_subnet_tags = {
     "kubernetes.io/role/internal-elb" = 1
+    "kubernetes.io/cluster/${var.stack_name}" = "owned"
   }
 
   enable_nat_gateway      = true
