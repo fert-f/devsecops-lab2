@@ -45,7 +45,7 @@ spec:
           alb.ingress.kubernetes.io/group.name: mgmt
           alb.ingress.kubernetes.io/backend-protocol: HTTP
           alb.ingress.kubernetes.io/target-type: ip
-          alb.ingress.kubernetes.io/tags: "loki=true"
+          alb.ingress.kubernetes.io/tags: "harbor=true"
           alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-FS-1-2-Res-2020-10"
           alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
           alb.ingress.kubernetes.io/certificate-arn: ${acm_certificate_arn}

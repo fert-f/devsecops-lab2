@@ -52,7 +52,7 @@ spec:
         alb.ingress.kubernetes.io/group.name: mgmt
         alb.ingress.kubernetes.io/backend-protocol: HTTP
         alb.ingress.kubernetes.io/target-type: ip
-        alb.ingress.kubernetes.io/tags: "loki=true"
+        alb.ingress.kubernetes.io/tags: "sonarqube=true"
         alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-FS-1-2-Res-2020-10"
         alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
         alb.ingress.kubernetes.io/certificate-arn: ${acm_certificate_arn}
@@ -79,6 +79,17 @@ spec:
         memory: 512Mi
         cpu: 100m
     postgresql:
+      primary:
+        # That part is required as default pod-antiaffinity triggers karpenter to span additional node
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                  - linux
       persistence:
         enabled: true
         size: 2G

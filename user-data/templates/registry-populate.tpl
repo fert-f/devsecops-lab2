@@ -19,7 +19,7 @@ spec:
               apk add curl jq
               # Waiting for harbor to come up
               while ! (curl --fail-with-body harbor-core.registry.svc.cluster.local/api/v2.0/ping); do echo "harbor-core.registry yet not responsive..."; sleep 5; done
-              sleep 10
+              sleep 30
               # Create registries
               curl -sk -X POST -u "admin:Harbor12345" http://harbor-core.registry.svc.cluster.local/api/v2.0/registries -H 'accept: application/json' -H 'Content-Type: application/json' \
               -d '{

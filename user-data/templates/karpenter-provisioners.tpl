@@ -29,16 +29,16 @@ spec:
       values: ["spot"]
     - key: karpenter.k8s.aws/instance-category
       operator: In
-      values: [c, m, r]
+      values: [c, m, r, t]
     # - key: "karpenter.k8s.aws/instance-cpu"
     #   operator: In
     #   values: ["1", "2", "4"]
-    - key: "karpenter.k8s.aws/instance-hypervisor"
-      operator: In
-      values: ["nitro"]
-    - key: "kubernetes.io/arch"
-      operator: In
-      values: ["amd64"]
+    # - key: "karpenter.k8s.aws/instance-hypervisor"
+    #   operator: In
+    #   values: ["nitro"]
+    # - key: "kubernetes.io/arch"
+    #   operator: In
+    #   values: ["amd64"]
   limits:
     resources:
       cpu: "4"
@@ -78,10 +78,10 @@ spec:
       values: ["spot"]
     - key: karpenter.k8s.aws/instance-category
       operator: In
-      values: [c, m, r]
-    - key: "kubernetes.io/arch"
-      operator: In
-      values: ["amd64"]
+      values: [c, m, r, t]
+    # - key: "kubernetes.io/arch"
+    #   operator: In
+    #   values: ["amd64"]
   limits:
     resources:
       cpu: "4"
