@@ -17,6 +17,9 @@ kind: Provisioner
 metadata:
   name: default
 spec:
+  kubeletConfiguration:
+    maxPods: 110
+    podsPerCore: 20
   #taints:
   #  - key: example.com/special-taint
   #    effect: NoSchedule
@@ -41,7 +44,7 @@ spec:
     #   values: ["amd64"]
   limits:
     resources:
-      cpu: "4"
+      cpu: "8"
       memory: 16Gi
   providerRef:
     name: default
@@ -66,6 +69,9 @@ kind: Provisioner
 metadata:
   name: jenkins-runner
 spec:
+  kubeletConfiguration:
+    maxPods: 110
+    podsPerCore: 20
   #taints:
   #  - key: example.com/special-taint
   #    effect: NoSchedule
@@ -89,4 +95,4 @@ spec:
   providerRef:
     name: jenkins-runner
   consolidation: 
-    enabled: false
+    enabled: true

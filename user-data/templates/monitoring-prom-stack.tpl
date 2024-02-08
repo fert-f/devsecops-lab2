@@ -44,6 +44,12 @@ spec:
       interval: 10m
   values:
     grafana:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
       defaultDashboardsEnabled: false
       ingress:
         annotations:
@@ -202,6 +208,12 @@ spec:
           cert-manager.io/cluster-issuer: "letsencrypt-staging"
         hosts: [prometheus.${stack_name}.${domain_name}]
       prometheusSpec:
+        tolerations:
+          - key: role
+            operator: "Equal"
+            value: worker
+        nodeSelector:
+          node.kubernetes.io/role: worker
         # nodeSelector:
         #   "kubernetes.io/arch": arm64
         retention: 3d
@@ -221,6 +233,12 @@ spec:
           requests:
             cpu: "10m"
             memory: "32Mi"
+        tolerations:
+          - key: role
+            operator: "Equal"
+            value: worker
+        nodeSelector:
+          node.kubernetes.io/role: worker
     defaultRules:
       create: true
       rules:

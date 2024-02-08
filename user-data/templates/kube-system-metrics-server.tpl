@@ -31,4 +31,10 @@ spec:
   values:
     args:
     - --kubelet-insecure-tls
+    tolerations:
+      - key: role
+        operator: "Equal"
+        value: controller
+    nodeSelector:
+      node.kubernetes.io/role: controller
 ---

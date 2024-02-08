@@ -6,6 +6,12 @@ metadata:
 spec:
   template:
     spec:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
       serviceAccountName: defectdojo-token-generator
       restartPolicy: Never
       containers:

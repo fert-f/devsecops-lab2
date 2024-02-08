@@ -29,6 +29,12 @@ spec:
         namespace: security
       interval: 10m
   values:
+    tolerations:
+      - key: role
+        operator: "Equal"
+        value: worker
+    nodeSelector:
+      node.kubernetes.io/role: worker
     service:
       port: 9090
     trivy:

@@ -60,7 +60,7 @@ module "eks" {
   }
 
   self_managed_node_groups = {
-    spot = {
+    (var.stack_name) = {
       ami_id                     = data.aws_ami.amazon-eks-linux-2.id
       min_size                   = 1
       desired_size               = 1

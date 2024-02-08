@@ -78,9 +78,21 @@ spec:
       requests:
         memory: 512Mi
         cpu: 100m
+    tolerations:
+      - key: role
+        operator: "Equal"
+        value: worker
+    nodeSelector:
+      node.kubernetes.io/role: worker
     postgresql:
       primary:
         # That part is required as default pod-antiaffinity triggers karpenter to span additional node
+        tolerations:
+          - key: role
+            operator: "Equal"
+            value: worker
+        nodeSelector:
+          node.kubernetes.io/role: worker
         affinity:
           nodeAffinity:
             requiredDuringSchedulingIgnoredDuringExecution:

@@ -43,6 +43,9 @@ spec:
       annotations:
         eks.amazonaws.com/role-arn: '${karpenter_irsa_role_arn}'
     controller:
+      env:
+        - name: AWS_ENI_LIMITED_POD_DENSITY
+          value: 'false'
       resources:
         request:
           cpu: "50m"

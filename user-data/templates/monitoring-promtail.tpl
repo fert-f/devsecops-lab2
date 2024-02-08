@@ -73,3 +73,6 @@ spec:
       - key: node.kubernetes.io/role
         operator: "Equal"
         value: controller
+      - key: node.kubernetes.io/role
+        operator: "Equal"
+        value: worker

@@ -39,6 +39,12 @@ spec:
       create: true
       passwordHash: $2y$10$zTRdq9bLcEmGF27exGcKZ.LnSNIOpwV.n5H7tLP4/oyuSRGjTk7Ai
       username: admin
+    tolerations:
+      - key: role
+        operator: "Equal"
+        value: controller
+    nodeSelector:
+      node.kubernetes.io/role: controller
     resources:
       requests:
         cpu: "10m"

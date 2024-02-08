@@ -49,9 +49,9 @@ variable "worker_group_resources" {
   # default     = "16384"
   default = {
     cpu_min = "2"
-    cpu_max = "4"
+    cpu_max = "8"
     mem_min = "4000"
-    mem_max = "5000"
+    mem_max = "8000"
   }
 }
 # variable "worker_group_cpu" {

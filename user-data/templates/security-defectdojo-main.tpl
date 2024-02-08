@@ -44,6 +44,12 @@ spec:
     tag: ${version_app_defectdojo}
     host: defectdojo.${stack_name}.${domain_name}
     rabbitmq:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
       resources:
         requests:
           memory: 32Mi
@@ -60,11 +66,23 @@ spec:
     postgresql:
       enabled: true
       primary:
+        tolerations:
+          - key: role
+            operator: "Equal"
+            value: worker
+        nodeSelector:
+          node.kubernetes.io/role: worker
         resources:
           requests:
             cpu: "50m"
             memory: "32Mi"
     django:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
       uwsgi:
         resources:
           requests:
@@ -99,11 +117,23 @@ spec:
     database: postgresql
     celery:
       beat:
+        tolerations:
+          - key: role
+            operator: "Equal"
+            value: worker
+        nodeSelector:
+          node.kubernetes.io/role: worker
         resources:
           requests:
             memory: 32Mi
             cpu: 50m
       worker:
+        tolerations:
+          - key: role
+            operator: "Equal"
+            value: worker
+        nodeSelector:
+          node.kubernetes.io/role: worker
         resources:
           requests:
             memory: 32Mi

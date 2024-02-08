@@ -1,4 +1,5 @@
 module "acm" {
+  count = var.domain_name != "test.local" ? 1 : 0
   source  = "terraform-aws-modules/acm/aws"
   version = "~> 4.0"
 

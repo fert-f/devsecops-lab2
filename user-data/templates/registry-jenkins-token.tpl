@@ -6,6 +6,12 @@ metadata:
 spec:
   template:
     spec:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
       serviceAccountName: harbor-token-generator
       restartPolicy: Never
       containers:

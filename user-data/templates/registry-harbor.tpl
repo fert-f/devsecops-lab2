@@ -33,6 +33,12 @@ spec:
       retries: -1
   values:
     logLevel: debug
+    tolerations:
+      - key: role
+        operator: "Equal"
+        value: worker
+    nodeSelector:
+      node.kubernetes.io/role: worker
     expose:
       type: ingress
       ingress:
@@ -80,6 +86,12 @@ spec:
       enabled: false
     database:
       internal:
+        tolerations:
+          - key: role
+            operator: "Equal"
+            value: worker
+        nodeSelector:
+          node.kubernetes.io/role: worker
         resources:
           requests:
             cpu: "30m"
@@ -88,10 +100,52 @@ spec:
             cpu: "500m"
             memory: "1024Mi"
     trivy:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
       resources:
         requests:
           cpu: "10m"
           memory: "32Mi"
+    portal:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
+    redis:
+      internal:
+        tolerations:
+          - key: role
+            operator: "Equal"
+            value: worker
+        nodeSelector:
+          node.kubernetes.io/role: worker
+    core:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
+    registry:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
+    jobservice:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
     # harborAdminPassword: Harbor12345
     # chartmuseum:
     #   enabled: false

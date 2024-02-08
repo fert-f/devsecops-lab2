@@ -75,6 +75,26 @@ spec:
         type: 'filesystem'
     singleBinary:
       replicas: 1
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
+    gateway:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
+    grafana-agent-operator:
+      tolerations:
+        - key: role
+          operator: "Equal"
+          value: worker
+      nodeSelector:
+        node.kubernetes.io/role: worker
     monitoring:
       serviceMonitor:
         # annotations: {}

@@ -44,6 +44,8 @@ spec:
         alb.ingress.kubernetes.io/certificate-arn: ${acm_certificate_arn}
       hostname: kube-ops-view.${stack_name}.${domain_name}
     packaging:
+      helm:
+        enabled: false
       flux:
         enabled: true
 ---

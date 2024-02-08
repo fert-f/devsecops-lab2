@@ -45,7 +45,7 @@ module "templates" {
   for_each = fileset("../../user-data/templates", "*")
   file     = each.key
   vars = {
-    acm_certificate_arn             = module.acm.acm_certificate_arn
+    acm_certificate_arn             = var.domain_name != "test.local" ? module.acm[0].acm_certificate_arn : "replaceMe"
     aws_account                     = data.aws_caller_identity.current.account_id
     cert_manager_irsa_role          = var.domain_name != "test.local" ? module.cert_manager_irsa_role[0].iam_role_arn : "null"
     domain_name                     = var.domain_name
