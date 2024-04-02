@@ -5,7 +5,12 @@ locals {
 
   vpc_cidr = var.cidr_block
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
-  tags     = {}
+  tags = {
+      Environment = "Test"
+      Owner       = var.stack_name
+      Project     = "DevSecOps"
+      Managed_by  = "Terraform"
+  }
   external_manifests = [
     "https://raw.githubusercontent.com/prometheus-community/helm-charts/kube-prometheus-stack-${var.versions["helm_promstack"]}/charts/kube-prometheus-stack/charts/crds/crds/crd-servicemonitors.yaml",
     "https://raw.githubusercontent.com/prometheus-community/helm-charts/kube-prometheus-stack-${var.versions["helm_promstack"]}/charts/kube-prometheus-stack/charts/crds/crds/crd-prometheusrules.yaml",

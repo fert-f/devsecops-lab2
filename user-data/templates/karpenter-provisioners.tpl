@@ -7,6 +7,7 @@ spec:
   amiFamily: AL2
   tags:
     Name: "${stack_name}-karpenter-default"
+    Project: "${stack_name}"
   subnetSelector:
     kubernetes.io/cluster/${stack_name}: owned
   securityGroupSelector:
@@ -59,6 +60,8 @@ spec:
   amiFamily: AL2
   tags:
     Name: "${stack_name}-karpenter-jenkins-runner"
+    Project: "${stack_name}"
+    Owner: "${var.stack_name}"
   subnetSelector:
     kubernetes.io/cluster/${stack_name}: owned
   securityGroupSelector:
